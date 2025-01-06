@@ -9,11 +9,17 @@ It uses an embedded SQLLite DB. The follwing APIs are currently supported:
 
 GET /api/users
 
-### Usage Notes
+### Install
 After cloning this repo, download and install https://jmeubank.github.io/tdm-gcc/download/ and set the PATH
 
 Then run<br>
 go env -w CGO_ENABLED=1
 
-Then run<br>
-go run .
+### Testing
+The apis can be tested by running:
+
+go test ./main
+
+### Usage Notes
+The gin web application can be run using:<br>
+go run ./main
