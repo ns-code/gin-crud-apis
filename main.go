@@ -1,29 +1,45 @@
 package main
 
 import (
-	"github.com/ns-code/gin-crud-apis/models"
 	"log"
 	"net/http"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-contrib/cors" 
+	"github.com/ns-code/gin-crud-apis/docs"
+	"github.com/ns-code/gin-crud-apis/models"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
 
-	    // Create a CORS config with allowed origins, methods, headers etc.
+	// Create a CORS config with allowed origins, methods, headers etc.
 
-		corsConfig := cors.Config{
+	corsConfig := cors.Config{
 
-			AllowOrigins:     []string{"http://localhost:4200"},
-	
-			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-	
-			// AllowHeaders:     []string{"Content-Type", "Authorization"},
-	
-			// AllowCredentials: true, // Allow sending cookies with requests
-	
-		}
-	
+		AllowOrigins: []string{"http://localhost:4200"},
+
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+
+		// AllowHeaders:     []string{"Content-Type", "Authorization"},
+
+		// AllowCredentials: true, // Allow sending cookies with requests
+
+	}
+
+	// @Summary get users
+	// @Description get string by ID
+	// @Produce  json
+
+
+	docs.SwaggerInfo.Title = "gin-crud-apis"
+	docs.SwaggerInfo.Description = "gin crud apis"
+	docs.SwaggerInfo.Version = ""
+	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.BasePath = ""
+	docs.SwaggerInfo.Schemes = []string{"http"}
+
 
 	err := models.ConnectUserDatabase()
 	checkErr(err)
@@ -31,17 +47,21 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.New(corsConfig))
 
-	// API v1
+	// url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
+	// url := ginSwagger.URL("http://localhost:8080/docs/swagger.json")
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	v1 := r.Group("/api")
 	{
-		v1.GET("users", getUsers)
+
+	v1.GET("users", getUsers)
 		// v1.GET("person", getPersons)
 
-/* 		v1.GET("person/:id", getPersonById)
-		v1.POST("person", addPerson)
-		v1.PUT("person/:id", updatePerson)
-		v1.DELETE("person/:id", deletePerson)
-		v1.OPTIONS("person", options) */
+		/* 		v1.GET("person/:id", getPersonById)
+		   		v1.POST("person", addPerson)
+		   		v1.PUT("person/:id", updatePerson)
+		   		v1.DELETE("person/:id", deletePerson)
+		   		v1.OPTIONS("person", options) */
 	}
 
 	// By default it serves on :8080 unless a
@@ -49,6 +69,12 @@ func main() {
 	r.Run()
 }
 
+
+
+// @Tags         users
+// @Produce      json
+// @Success 200 {array} models.User
+// @Router /api/users [get]
 func getUsers(c *gin.Context) {
 
 	users, err := models.GetUsers(10)
@@ -157,4 +183,3 @@ func checkErr(err error) {
 		log.Fatal(err)
 	}
 }
-

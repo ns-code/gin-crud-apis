@@ -16,10 +16,15 @@ Then run<br>
 go env -w CGO_ENABLED=1
 
 ### Testing
-The apis can be tested by running:
+The apis can be unit tested by running:<br>
+go test .
 
-go test ./main
+The apis can be integration tested by running the swagger UI:<br>
+http://localhost:8080/docs/index.html
 
 ### Usage Notes
 The gin web application can be run using:<br>
-go run ./main
+go run .
+
+and then accessing:<br>
+http://localhost:8080/api/users

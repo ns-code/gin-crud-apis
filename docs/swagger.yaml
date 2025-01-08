@@ -1,0 +1,35 @@
+definitions:
+  models.User:
+    properties:
+      department:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      userId:
+        type: integer
+      userName:
+        type: string
+      userStatus:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      tags:
+      - users
+swagger: "2.0"
