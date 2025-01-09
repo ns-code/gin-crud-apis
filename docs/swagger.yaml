@@ -21,6 +21,7 @@ info:
 paths:
   /api/users:
     get:
+      description: get all users
       produces:
       - application/json
       responses:
@@ -30,6 +31,77 @@ paths:
             items:
               $ref: '#/definitions/models.User'
             type: array
+        "400":
+          description: Bad Request
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Add a new user
+      parameters:
+      - description: Create User
+        in: body
+        name: users
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: user
+        "400":
+          description: Bad Request
+        "409":
+          description: User Name exists
+      tags:
+      - users
+  /api/users/{userId}:
+    delete:
+      description: delete a user by user_id
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "409":
+          description: User Name exists
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: update a user
+      parameters:
+      - description: update user by id
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: Update user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: user
+        "400":
+          description: Bad Request
+        "409":
+          description: User Name exists
       tags:
       - users
 swagger: "2.0"

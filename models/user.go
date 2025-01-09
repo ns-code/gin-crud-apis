@@ -63,6 +63,86 @@ func GetUsers(count int) ([]User, error) {
 	return users, err
 }
 
+func AddUser(newUser User) (bool, error) {
+
+	tx, err := USERDB.Begin()
+	if err != nil {
+		return false, err
+	}
+
+	stmt, err := tx.Prepare("INSERT INTO user (user_name, first_name, last_name, email, user_status, department) VALUES (?, ?, ?, ?, ?, ?)")
+
+	if err != nil {
+		return false, err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(newUser.UserName, newUser.FirstName, newUser.LastName, newUser.Email, newUser.UserStatus, newUser.Department)
+
+	if err != nil {
+		return false, err
+	}
+
+	tx.Commit()
+
+	return true, nil
+}
+
+func UpdateUser(ourUser User, userId int) (bool, error) {
+
+	tx, err := USERDB.Begin()
+	if err != nil {
+		return false, err
+	}
+
+	stmt, err := tx.Prepare("UPDATE user SET user_name = ?, first_name = ?, last_name = ?, email = ?, user_status = ?, department = ? WHERE user_id = ?")
+
+	if err != nil {
+		return false, err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(ourUser.UserName, ourUser.FirstName, ourUser.LastName, ourUser.Email, ourUser.UserStatus, ourUser.Department, userId)
+
+	if err != nil {
+		return false, err
+	}
+
+	tx.Commit()
+
+	return true, nil
+}
+
+func DeleteUser(userId int) (bool, error) {
+
+	tx, err := USERDB.Begin()
+
+	if err != nil {
+		return false, err
+	}
+
+	stmt, err := USERDB.Prepare("DELETE from user where user_id = ?")
+
+	if err != nil {
+		return false, err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(userId)
+
+	if err != nil {
+		return false, err
+	}
+
+	tx.Commit()
+
+	return true, nil
+}
+
+
 /*
 func GetUserById(id string) (User, error) {
 
@@ -85,82 +165,8 @@ func GetUserById(id string) (User, error) {
 	return person, nil
 }
 
-func AddUser(newUser User) (bool, error) {
 
-	tx, err := DB.Begin()
-	if err != nil {
-		return false, err
-	}
 
-	stmt, err := tx.Prepare("INSERT INTO people (first_name, last_name, email, ip_address) VALUES (?, ?, ?, ?)")
 
-	if err != nil {
-		return false, err
-	}
 
-	defer stmt.Close()
-
-	_, err = stmt.Exec(newUser.FirstName, newUser.LastName, newUser.Email, newUser.IpAddress)
-
-	if err != nil {
-		return false, err
-	}
-
-	tx.Commit()
-
-	return true, nil
-}
-
-func UpdateUser(ourUser User, id int) (bool, error) {
-
-	tx, err := DB.Begin()
-	if err != nil {
-		return false, err
-	}
-
-	stmt, err := tx.Prepare("UPDATE people SET first_name = ?, last_name = ?, email = ?, ip_address = ? WHERE Id = ?")
-
-	if err != nil {
-		return false, err
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(ourUser.FirstName, ourUser.LastName, ourUser.Email, ourUser.IpAddress, id)
-
-	if err != nil {
-		return false, err
-	}
-
-	tx.Commit()
-
-	return true, nil
-}
-
-func DeleteUser(personId int) (bool, error) {
-
-	tx, err := DB.Begin()
-
-	if err != nil {
-		return false, err
-	}
-
-	stmt, err := DB.Prepare("DELETE from people where id = ?")
-
-	if err != nil {
-		return false, err
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(personId)
-
-	if err != nil {
-		return false, err
-	}
-
-	tx.Commit()
-
-	return true, nil
-}
 */

@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
+	"github.com/ns-code/gin-crud-apis/docs"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/ns-code/gin-crud-apis/docs"
 	"github.com/ns-code/gin-crud-apis/models"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -30,9 +33,6 @@ func main() {
 
 	// @Summary get users
 	// @Description get string by ID
-	// @Produce  json
-
-
 	docs.SwaggerInfo.Title = "gin-crud-apis"
 	docs.SwaggerInfo.Description = "gin crud apis"
 	docs.SwaggerInfo.Version = ""
@@ -47,33 +47,25 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.New(corsConfig))
 
-	// url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
-	// url := ginSwagger.URL("http://localhost:8080/docs/swagger.json")
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := r.Group("/api")
 	{
 
-	v1.GET("users", getUsers)
-		// v1.GET("person", getPersons)
-
-		/* 		v1.GET("person/:id", getPersonById)
-		   		v1.POST("person", addPerson)
-		   		v1.PUT("person/:id", updatePerson)
-		   		v1.DELETE("person/:id", deletePerson)
-		   		v1.OPTIONS("person", options) */
+		v1.GET("users", getUsers)
+		v1.POST("users", addUser)
+		v1.PUT("users/:user_id", updateUser)
+		v1.DELETE("users/:user_id", deleteUser)
 	}
 
-	// By default it serves on :8080 unless a
-	// PORT environment variable was defined.
 	r.Run()
 }
 
-
-
+// @Description get all users
 // @Tags         users
 // @Produce      json
 // @Success 200 {array} models.User
+// @Failure   400  "Bad Request"  
 // @Router /api/users [get]
 func getUsers(c *gin.Context) {
 
@@ -86,6 +78,102 @@ func getUsers(c *gin.Context) {
 		return
 	} else {
 		c.JSON(http.StatusOK, users)
+	}
+}
+
+// @Description Add a new user
+// @Tags        users
+// @Accept       json
+// @Param		users body models.User true "Create User"
+// @Produce      json
+// @Success 201  user models.User
+// @Failure 409  "User Name exists"  
+// @Failure 400  "Bad Request"  
+// @Router /api/users [post]
+func addUser(c *gin.Context) {
+
+	var json models.User
+
+	log.Println(c.Request.Body)
+
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	success, err := models.AddUser(json)
+
+	if success {
+		c.JSON(http.StatusCreated, gin.H{"message": "Success"})
+	} else {
+		if strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
+			c.JSON(http.StatusConflict, gin.H{"error": err})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		}
+	}
+}
+
+// @Description update a user
+// @Tags users
+// @Accept       json
+// @Param		 userId path string true "update user by id"
+// @Param		 user body models.User true  "Update user"
+// @Success 200  user models.User
+// @Failure   409  "User Name exists"  
+// @Failure   400  "Bad Request"  
+// @Router /api/users/{userId} [put]
+func updateUser(c *gin.Context) {
+
+	var json models.User
+
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userId, err := strconv.Atoi(c.Param("user_id"))
+
+	fmt.Printf("Updating id %d", userId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UserID"})
+	}
+
+	success, err := models.UpdateUser(json, userId)
+
+	if success {
+		c.JSON(http.StatusOK, gin.H{"message": "Update User Success"})
+	} else {
+		if strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
+			c.JSON(http.StatusConflict, gin.H{"error": err})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		}
+	}
+}
+
+// @Description delete a user by user_id
+// @Tags users
+// @Param        userId     path    int     true        "User ID"
+// @Success 204  "No Content"
+// @Failure   409  "User Name exists"  
+// @Failure   400  "Bad Request"  
+// @Router /api/users/{userId} [delete]
+func deleteUser(c *gin.Context) {
+
+	userId, err := strconv.Atoi(c.Param("user_id"))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UserID"})
+	}
+
+	success, err := models.DeleteUser(userId)
+
+	if success {
+		c.JSON(http.StatusOK, gin.H{"message": "Success"})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
 }
 
@@ -106,66 +194,6 @@ func getUsers(c *gin.Context) {
 	}
 }
 
-func addPerson(c *gin.Context) {
-
-	var json models.Person
-
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	success, err := models.AddPerson(json)
-
-	if success {
-		c.JSON(http.StatusOK, gin.H{"message": "Success"})
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-	}
-}
-
-func updatePerson(c *gin.Context) {
-
-	var json models.Person
-
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	personId, err := strconv.Atoi(c.Param("id"))
-
-	fmt.Printf("Updating id %d", personId)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-	}
-
-	success, err := models.UpdatePerson(json, personId)
-
-	if success {
-		c.JSON(http.StatusOK, gin.H{"message": "Success"})
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-	}
-}
-
-func deletePerson(c *gin.Context) {
-
-	personId, err := strconv.Atoi(c.Param("id"))
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-	}
-
-	success, err := models.DeletePerson(personId)
-
-	if success {
-		c.JSON(http.StatusOK, gin.H{"message": "Success"})
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-	}
-} */
 
 func options(c *gin.Context) {
 
@@ -177,6 +205,8 @@ func options(c *gin.Context) {
 
 	c.String(200, ourOptions)
 }
+
+*/
 
 func checkErr(err error) {
 	if err != nil {
