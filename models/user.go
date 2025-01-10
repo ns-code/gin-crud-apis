@@ -67,12 +67,14 @@ func AddUser(newUser User) (bool, error) {
 
 	tx, err := USERDB.Begin()
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 
 	stmt, err := tx.Prepare("INSERT INTO user (user_name, first_name, last_name, email, user_status, department) VALUES (?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 
@@ -81,6 +83,7 @@ func AddUser(newUser User) (bool, error) {
 	_, err = stmt.Exec(newUser.UserName, newUser.FirstName, newUser.LastName, newUser.Email, newUser.UserStatus, newUser.Department)
 
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 
@@ -93,12 +96,14 @@ func UpdateUser(ourUser User, userId int) (bool, error) {
 
 	tx, err := USERDB.Begin()
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 
 	stmt, err := tx.Prepare("UPDATE user SET user_name = ?, first_name = ?, last_name = ?, email = ?, user_status = ?, department = ? WHERE user_id = ?")
 
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 
@@ -107,6 +112,7 @@ func UpdateUser(ourUser User, userId int) (bool, error) {
 	_, err = stmt.Exec(ourUser.UserName, ourUser.FirstName, ourUser.LastName, ourUser.Email, ourUser.UserStatus, ourUser.Department, userId)
 
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 
@@ -120,12 +126,14 @@ func DeleteUser(userId int) (bool, error) {
 	tx, err := USERDB.Begin()
 
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 
 	stmt, err := USERDB.Prepare("DELETE from user where user_id = ?")
 
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 
@@ -134,6 +142,7 @@ func DeleteUser(userId int) (bool, error) {
 	_, err = stmt.Exec(userId)
 
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 

@@ -17,20 +17,6 @@ import (
 
 func main() {
 
-	// Create a CORS config with allowed origins, methods, headers etc.
-
-	corsConfig := cors.Config{
-
-		AllowOrigins: []string{"http://localhost:4200"},
-
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-
-		// AllowHeaders:     []string{"Content-Type", "Authorization"},
-
-		// AllowCredentials: true, // Allow sending cookies with requests
-
-	}
-
 	// @Summary get users
 	// @Description get string by ID
 	docs.SwaggerInfo.Title = "gin-crud-apis"
@@ -45,7 +31,7 @@ func main() {
 	checkErr(err)
 
 	r := gin.Default()
-	r.Use(cors.New(corsConfig))
+	r.Use(cors.Default())
 
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -192,18 +178,6 @@ func deleteUser(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{"data": person})
 	}
-}
-
-
-func options(c *gin.Context) {
-
-	ourOptions := "HTTP/1.1 200 OK\n" +
-		"Allow: GET,POST,PUT,DELETE,OPTIONS\n" +
-		"Access-Control-Allow-Origin: http://locahost:8080\n" +
-		"Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS\n" +
-		"Access-Control-Allow-Headers: Content-Type\n"
-
-	c.String(200, ourOptions)
 }
 
 */
