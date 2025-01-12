@@ -16,6 +16,21 @@ definitions:
       userStatus:
         type: string
     type: object
+  models.UserDTO:
+    properties:
+      department:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      userName:
+        type: string
+      userStatus:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -45,14 +60,14 @@ paths:
         name: users
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/models.UserDTO'
       produces:
       - application/json
       responses:
         "201":
-          description: Created
+          description: User created
           schema:
-            type: user
+            $ref: '#/definitions/models.User'
         "400":
           description: Bad Request
         "409":
@@ -92,12 +107,12 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/models.UserDTO'
       responses:
         "200":
-          description: OK
+          description: User updated
           schema:
-            type: user
+            $ref: '#/definitions/models.User'
         "400":
           description: Bad Request
         "409":

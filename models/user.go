@@ -20,6 +20,15 @@ func ConnectUserDatabase() error {
 	return nil
 }
 
+type UserDTO struct {
+	UserName   string `json:"userName"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
+	Email      string `json:"email"`
+	UserStatus string `json:"userStatus"`
+	Department string `json:"department"`
+}
+
 type User struct {
 	UserId        int `json:"userId"`
 	UserName   string `json:"userName"`

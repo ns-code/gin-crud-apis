@@ -57,15 +57,15 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserDTO"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "User created",
                         "schema": {
-                            "type": "user"
+                            "$ref": "#/definitions/models.User"
                         }
                     },
                     "400": {
@@ -100,15 +100,15 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserDTO"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "User updated",
                         "schema": {
-                            "type": "user"
+                            "$ref": "#/definitions/models.User"
                         }
                     },
                     "400": {
@@ -165,6 +165,29 @@ const docTemplate = `{
                 },
                 "userId": {
                     "type": "integer"
+                },
+                "userName": {
+                    "type": "string"
+                },
+                "userStatus": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserDTO": {
+            "type": "object",
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
                 },
                 "userName": {
                     "type": "string"

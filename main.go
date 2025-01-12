@@ -70,9 +70,9 @@ func getUsers(c *gin.Context) {
 // @Description Add a new user
 // @Tags        users
 // @Accept       json
-// @Param		users body models.User true "Create User"
+// @Param		users body models.UserDTO true "Create User"
 // @Produce      json
-// @Success 201  user models.User
+// @Success 201  {object} models.User "User created"
 // @Failure 409  "User Name exists"  
 // @Failure 400  "Bad Request"  
 // @Router /api/users [post]
@@ -90,7 +90,7 @@ func addUser(c *gin.Context) {
 	success, err := models.AddUser(json)
 
 	if success {
-		c.JSON(http.StatusCreated, gin.H{"message": "Success"})
+		c.JSON(http.StatusCreated, gin.H{"message": "Add User Success"})
 	} else {
 		if strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
 			c.JSON(http.StatusConflict, gin.H{"error": err})
@@ -104,8 +104,8 @@ func addUser(c *gin.Context) {
 // @Tags users
 // @Accept       json
 // @Param		 userId path string true "update user by id"
-// @Param		 user body models.User true  "Update user"
-// @Success 200  user models.User
+// @Param		 user body models.UserDTO true  "Update user"
+// @Success 200  {object} models.User "User updated"
 // @Failure   409  "User Name exists"  
 // @Failure   400  "Bad Request"  
 // @Router /api/users/{userId} [put]
@@ -157,7 +157,7 @@ func deleteUser(c *gin.Context) {
 	success, err := models.DeleteUser(userId)
 
 	if success {
-		c.JSON(http.StatusOK, gin.H{"message": "Success"})
+		c.JSON(http.StatusOK, gin.H{"message": "Delete User Success"})
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
