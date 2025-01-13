@@ -93,7 +93,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	userId, err := strconv.Atoi(c.Param("user_id"))
+	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
 
 	fmt.Printf("Updating id %d", userId)
 
@@ -134,7 +134,7 @@ func UpdateUser(c *gin.Context) {
 // @Router /api/users/{userId} [delete]
 func DeleteUser(c *gin.Context) {
 
-	userId, err := strconv.Atoi(c.Param("user_id"))
+	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UserID"})

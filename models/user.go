@@ -9,13 +9,15 @@ import (
 )
 
 var USERDB *sql.DB
+var USERDBERR bool
 
 func ConnectUserDatabase() error {
 	db, err := sql.Open("sqlite3", "./users.db")
 	if err != nil {
+		USERDBERR = true
 		return err
 	}
-
+	USERDBERR = false
 	USERDB = db
 	return nil
 }
@@ -30,7 +32,7 @@ type UserDTO struct {
 }
 
 type User struct {
-	UserId        int `json:"userId"`
+	UserId      int64 `json:"userId"`
 	UserName   string `json:"userName"`
 	FirstName  string `json:"firstName"`
 	LastName   string `json:"lastName"`
@@ -72,33 +74,35 @@ func GetUsers(count int) ([]User, error) {
 	return users, err
 }
 
-func AddUser(newUser User) (bool, error) {
+func AddUser(newUser User) (int64, error) {
 
 	tx, err := USERDB.Begin()
 	if err != nil {
 		tx.Rollback()
-		return false, err
+		return 0, err
 	}
 
 	stmt, err := tx.Prepare("INSERT INTO user (user_name, first_name, last_name, email, user_status, department) VALUES (?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
 		tx.Rollback()
-		return false, err
+		return 0, err
 	}
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(newUser.UserName, newUser.FirstName, newUser.LastName, newUser.Email, newUser.UserStatus, newUser.Department)
+	res, errres := stmt.Exec(newUser.UserName, newUser.FirstName, newUser.LastName, newUser.Email, newUser.UserStatus, newUser.Department)
 
-	if err != nil {
+	if errres != nil {
 		tx.Rollback()
-		return false, err
+		return 0, err
 	}
 
 	tx.Commit()
 
-	return true, nil
+	lastInsertedId, _ := res.LastInsertId()
+
+	return lastInsertedId, nil
 }
 
 func UpdateUser(ourUser User, userId int) (bool, error) {
@@ -126,7 +130,6 @@ func UpdateUser(ourUser User, userId int) (bool, error) {
 	}
 
 	tx.Commit()
-
 	return true, nil
 }
 
