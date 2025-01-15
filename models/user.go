@@ -32,7 +32,7 @@ type UserDTO struct {
 }
 
 type User struct {
-	UserId      int64 `json:"userId"`
+	UserId     int64  `json:"userId"`
 	UserName   string `json:"userName"`
 	FirstName  string `json:"firstName"`
 	LastName   string `json:"lastName"`
@@ -162,7 +162,6 @@ func DeleteUser(userId int) (bool, error) {
 
 	return true, nil
 }
-
 
 /*
 func GetUserById(id string) (User, error) {

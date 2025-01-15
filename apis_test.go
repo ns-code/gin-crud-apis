@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"encoding/json"
-    "bytes"
 	// "strings"
 	"testing"
 
@@ -23,7 +23,7 @@ func SetupMockRouter(r *gin.Engine) *gin.Engine {
 		v1.PUT("users/:user_id", mock.UpdateUser)
 		v1.DELETE("users/:user_id", mock.DeleteUser)
 	}
-	return r;
+	return r
 }
 
 func TestGetUsers(t *testing.T) {
@@ -44,10 +44,10 @@ func TestAddUserWithUserNameExistsError(t *testing.T) {
 
 	// Create a test payload
 	payload := models.UserDTO{
-		UserName: "u123",
-		FirstName:   "fn222",
-		LastName: "ln222",
-		Email: "u222@test.com",
+		UserName:   "u123",
+		FirstName:  "fn222",
+		LastName:   "ln222",
+		Email:      "u222@test.com",
 		UserStatus: "T",
 		Department: "",
 	}
@@ -75,10 +75,10 @@ func TestAddUserWithSuccess(t *testing.T) {
 
 	// Create a test payload
 	payload := models.UserDTO{
-		UserName: "u224",
-		FirstName:   "fn222",
-		LastName: "ln222",
-		Email: "u222@test.com",
+		UserName:   "u224",
+		FirstName:  "fn222",
+		LastName:   "ln222",
+		Email:      "u222@test.com",
 		UserStatus: "T",
 		Department: "",
 	}
@@ -106,10 +106,10 @@ func TestUpdateUserWithSuccess(t *testing.T) {
 
 	// Create a test payload
 	payload := models.UserDTO{
-		UserName: "u123",
-		FirstName:   "fn222",
-		LastName: "ln222",
-		Email: "u222@test.com",
+		UserName:   "u123",
+		FirstName:  "fn222",
+		LastName:   "ln222",
+		Email:      "u222@test.com",
 		UserStatus: "T",
 		Department: "",
 	}
@@ -129,7 +129,6 @@ func TestUpdateUserWithSuccess(t *testing.T) {
 	// Assert on response
 	assert.Equal(t, http.StatusOK, w.Code)
 }
-
 
 func TestDeleteUserWithSuccess(t *testing.T) {
 	router := gin.Default()

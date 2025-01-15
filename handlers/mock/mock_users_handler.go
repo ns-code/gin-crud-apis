@@ -1,6 +1,7 @@
 package mock
 
-import (	"fmt"
+import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,15 +12,15 @@ import (	"fmt"
 )
 
 var usersDB = []models.User{
-	{UserId:123,UserName:"u123",FirstName:"fname1",LastName:"lname1",Email:"email1@test.com",UserStatus:"I",Department:""},
-	{UserId:456,UserName:"u456",FirstName:"fname2",LastName:"lname2",Email:"email2@test.com",UserStatus:"A",Department:""},
+	{UserId: 123, UserName: "u123", FirstName: "fname1", LastName: "lname1", Email: "email1@test.com", UserStatus: "I", Department: ""},
+	{UserId: 456, UserName: "u456", FirstName: "fname2", LastName: "lname2", Email: "email2@test.com", UserStatus: "A", Department: ""},
 }
 
 // @Description get all users
 // @Tags         users
 // @Produce      json
 // @Success 200 {array} models.User
-// @Failure   400  "Bad Request"  
+// @Failure   400  "Bad Request"
 // @Router /api/users [get]
 func GetUsers(c *gin.Context) {
 
@@ -39,8 +40,8 @@ func GetUsers(c *gin.Context) {
 // @Param		users body models.UserDTO true "Create User"
 // @Produce      json
 // @Success 201  {object} models.User "User created"
-// @Failure 409  "User Name exists"  
-// @Failure 400  "Bad Request"  
+// @Failure 409  "User Name exists"
+// @Failure 400  "Bad Request"
 // @Router /api/users [post]
 func AddUser(c *gin.Context) {
 
@@ -56,17 +57,17 @@ func AddUser(c *gin.Context) {
 	// check if userName already exists
 	errmsg := ""
 	for _, usr := range usersDB {
-        if usr.UserName == user.UserName {
+		if usr.UserName == user.UserName {
 			errmsg = "User Name: " + user.UserName + " exists"
 			break
 		}
-    }
+	}
 
 	lenBef := len(usersDB)
 	usersDB := append(usersDB, user)
 	lenAft := len(usersDB)
 
-	if (errmsg == "" && lenAft == lenBef + 1) {
+	if errmsg == "" && lenAft == lenBef+1 {
 		c.JSON(http.StatusCreated, user)
 	} else if len(errmsg) > 0 {
 		c.JSON(http.StatusConflict, gin.H{"error": errmsg})
@@ -81,8 +82,8 @@ func AddUser(c *gin.Context) {
 // @Param		 userId path string true "update user by id"
 // @Param		 user body models.UserDTO true  "Update user"
 // @Success 200  {object} models.User "User updated"
-// @Failure   409  "User Name exists"  
-// @Failure   400  "Bad Request"  
+// @Failure   409  "User Name exists"
+// @Failure   400  "Bad Request"
 // @Router /api/users/{userId} [put]
 func UpdateUser(c *gin.Context) {
 
@@ -112,7 +113,7 @@ func UpdateUser(c *gin.Context) {
 			usr.UserId = userId
 			break
 		}
-    }
+	}
 
 	if errmsg == "" {
 		c.JSON(http.StatusOK, gin.H{"message": "Update User Success"})
@@ -129,8 +130,8 @@ func UpdateUser(c *gin.Context) {
 // @Tags users
 // @Param        userId     path    int     true        "User ID"
 // @Success 204  "No Content"
-// @Failure   409  "User Name exists"  
-// @Failure   400  "Bad Request"  
+// @Failure   409  "User Name exists"
+// @Failure   400  "Bad Request"
 // @Router /api/users/{userId} [delete]
 func DeleteUser(c *gin.Context) {
 
@@ -141,13 +142,13 @@ func DeleteUser(c *gin.Context) {
 	}
 
 	newItems := []models.User{}
-    for _, item := range usersDB {
-        if item.UserId != userId {
-            newItems = append(newItems, item)
-        }
-    }
+	for _, item := range usersDB {
+		if item.UserId != userId {
+			newItems = append(newItems, item)
+		}
+	}
 
-	if len(newItems) == len(usersDB) - 1 {
+	if len(newItems) == len(usersDB)-1 {
 		c.JSON(http.StatusOK, gin.H{"message": "Delete User Success"})
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
