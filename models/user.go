@@ -21,22 +21,22 @@ func ConnectUserDatabase() error {
 }
 
 type UserDTO struct {
-	UserName   string `db:"USER_NAME"; json:"userName"`
-	FirstName  string `db:"FIRST_NAME"; json:"firstName"`
-	LastName   string `db:"LAST_NAME"; json:"lastName"`
-	Email      string `db:"EMAIL"; json:"email"`
-	UserStatus string `db:"USER_STATUS"; json:"userStatus"`
-	Department string `db:"DEPARTMENT"; json:"department"`
+	UserName   string `db:"USER_NAME" json:"userName"`
+	FirstName  string `db:"FIRST_NAME" json:"firstName"`
+	LastName   string `db:"LAST_NAME" json:"lastName"`
+	Email      string `db:"EMAIL" json:"email"`
+	UserStatus string `db:"USER_STATUS" json:"userStatus"`
+	Department string `db:"DEPARTMENT" json:"department"`
 }
 
 type User struct {
-	UserId     int64  `db:"USER_ID"; json:"userId"`
-	UserName   string `db:"USER_NAME"; json:"userName"`
-	FirstName  string `db:"FIRST_NAME"; json:"firstName"`
-	LastName   string `db:"LAST_NAME"; json:"lastName"`
-	Email      string `db:"EMAIL"; json:"email"`
-	UserStatus string `db:"USER_STATUS"; json:"userStatus"`
-	Department string `db:"DEPARTMENT"; json:"department"`
+	UserId     int64  `db:"USER_ID" json:"userId"`
+	UserName   string `db:"USER_NAME" json:"userName"`
+	FirstName  string `db:"FIRST_NAME" json:"firstName"`
+	LastName   string `db:"LAST_NAME" json:"lastName"`
+	Email      string `db:"EMAIL" json:"email"`
+	UserStatus string `db:"USER_STATUS" json:"userStatus"`
+	Department string `db:"DEPARTMENT" json:"department"`
 }
 
 func GetUsers(count int) ([]User, error) {
