@@ -1,18 +1,16 @@
 package models
 
 import (
-	"database/sql"
-	"fmt"
-	"strconv"
-
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/ns-code/gin-crud-apis/util"
 )
 
-var USERDB *sql.DB
+var USERDB *sqlx.DB
 var USERDBERR bool
 
 func ConnectUserDatabase() error {
-	db, err := sql.Open("sqlite3", "./users.db")
+	db, err := sqlx.Connect("sqlite3", "users.db")
 	if err != nil {
 		USERDBERR = true
 		return err
@@ -23,57 +21,34 @@ func ConnectUserDatabase() error {
 }
 
 type UserDTO struct {
-	UserName   string `json:"userName"`
-	FirstName  string `json:"firstName"`
-	LastName   string `json:"lastName"`
-	Email      string `json:"email"`
-	UserStatus string `json:"userStatus"`
-	Department string `json:"department"`
+	UserName   string `db:"USER_NAME"; json:"userName"`
+	FirstName  string `db:"FIRST_NAME"; json:"firstName"`
+	LastName   string `db:"LAST_NAME"; json:"lastName"`
+	Email      string `db:"EMAIL"; json:"email"`
+	UserStatus string `db:"USER_STATUS"; json:"userStatus"`
+	Department string `db:"DEPARTMENT"; json:"department"`
 }
 
 type User struct {
-	UserId     int64  `json:"userId"`
-	UserName   string `json:"userName"`
-	FirstName  string `json:"firstName"`
-	LastName   string `json:"lastName"`
-	Email      string `json:"email"`
-	UserStatus string `json:"userStatus"`
-	Department string `json:"department"`
+	UserId     int64  `db:"USER_ID"; json:"userId"`
+	UserName   string `db:"USER_NAME"; json:"userName"`
+	FirstName  string `db:"FIRST_NAME"; json:"firstName"`
+	LastName   string `db:"LAST_NAME"; json:"lastName"`
+	Email      string `db:"EMAIL"; json:"email"`
+	UserStatus string `db:"USER_STATUS"; json:"userStatus"`
+	Department string `db:"DEPARTMENT"; json:"department"`
 }
 
 func GetUsers(count int) ([]User, error) {
 
-	rows, err := USERDB.Query("SELECT user_id, user_name, first_name, last_name, email, user_status, department from user LIMIT " + strconv.Itoa(count))
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	users := make([]User, 0, count)
-
-	for rows.Next() {
-		singleUser := User{}
-		err = rows.Scan(&singleUser.UserId, &singleUser.UserName, &singleUser.FirstName, &singleUser.LastName, &singleUser.Email, &singleUser.UserStatus, &singleUser.Department)
-
-		if err != nil {
-			return nil, err
-		}
-
-		users = append(users, singleUser)
-		fmt.Println(">> Users count: ", len(users))
-	}
-
-	err = rows.Err()
-
-	if err != nil {
-		return nil, err
-	}
-
+	users := []User{}
+	err := USERDB.Select(&users, "SELECT * FROM user")
+	util.CheckErr(err, "users.db SELECT error")
 	return users, err
 }
 
+
+/* 
 func AddUser(newUser User) (int64, error) {
 
 	tx, err := USERDB.Begin()
@@ -163,7 +138,7 @@ func DeleteUser(userId int) (bool, error) {
 	return true, nil
 }
 
-/*
+ *//*
 func GetUserById(id string) (User, error) {
 
 	stmt, err := DB.Prepare("SELECT id, first_name, last_name, email, ip_address from people WHERE id = ?")

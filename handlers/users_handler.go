@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"fmt"
-	"log"
+	"encoding/json"
 	"net/http"
-	"strconv"
-	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github.com/ns-code/gin-crud-apis/models"
+	"github.com/ns-code/gin-crud-apis/util"
 )
 
 // @Description get all users
@@ -17,21 +14,25 @@ import (
 // @Success 200 {array} models.User
 // @Failure   400  "Bad Request"
 // @Router /api/users [get]
-func GetUsers(c *gin.Context) {
-	if !ServerError(c) {
-		users, err := models.GetUsers(10)
+func GetUsers(w http.ResponseWriter, r *http.Request) {
 
-		CheckErr(err)
+		users, err := models.GetUsers(10)
+		util.CheckErr(err, "GetUsers users error")
+
+		usersBytes, err := json.Marshal(users)
+		util.CheckErr(err, "GetUsers usersBytes error")
 
 		if users == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "No Records Found"})
-			return
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("No Records Found"))
 		} else {
-			c.JSON(http.StatusOK, users)
-		}
-	}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(usersBytes)
+		}	
 }
 
+/* 
 // @Description Add a new user
 // @Tags        users
 // @Accept       json
@@ -143,7 +144,7 @@ func ServerError(c *gin.Context) bool {
 	return false
 }
 
-/* func getPersonById(c *gin.Context) {
+ *//* func getPersonById(c *gin.Context) {
 
 	// grab the Id of the record want to retrieve
 	id := c.Param("id")
@@ -162,8 +163,4 @@ func ServerError(c *gin.Context) bool {
 
 */
 
-func CheckErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
+

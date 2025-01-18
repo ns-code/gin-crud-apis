@@ -1,36 +1,45 @@
 package main
 
 import (
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"fmt"
+	"log"
+	"net/http"
+
+	gorillahandlers "github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"github.com/ns-code/gin-crud-apis/docs"
 	"github.com/ns-code/gin-crud-apis/handlers"
 	"github.com/ns-code/gin-crud-apis/models"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/ns-code/gin-crud-apis/util"
 )
 
 func SetupDBConn() {
 	// init models.USERDB and models.USERDBERR global variables
 	err := models.ConnectUserDatabase()
-	handlers.CheckErr(err)
+	util.CheckErr(err, "users.db start error")
 }
 
-func SetupRouter(r *gin.Engine) *gin.Engine {
+func RunMuxServer() {
 
-	r.Use(cors.Default())
-
+	r := mux.NewRouter()
+	
 	SetupSwaggerDocs()
-	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	v1 := r.Group("/api")
-	{
-		v1.GET("users", handlers.GetUsers)
-		v1.POST("users", handlers.AddUser)
-		v1.PUT("users/:user_id", handlers.UpdateUser)
-		v1.DELETE("users/:user_id", handlers.DeleteUser)
-	}
-	return r
+	r.HandleFunc("/api/users", handlers.GetUsers).Methods("GET")
+	// r.HandleFunc("/api/users", handlers.AddUser).Methods("POST")
+	// r.HandleFunc("/api/users/:user_id", handlers.UpdateUser).Methods("PUT")
+	// r.HandleFunc("/api/users/:user_id", handlers.DeleteUser).Methods("DELETE")
+
+/*     corsOptions := gorillahandlers.CORSOptions{
+        AllowedOrigins: []string{"http://localhost:4200"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Allowed HTTP methods
+        AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Allowed request headers
+    }
+	
+	handler := gorillahandlers.CORS(corsOptions)(r) */
+
+	fmt.Println(">> Mux Server is starting at port 8080")
+	log.Fatal(http.ListenAndServe(":8080", gorillahandlers.CORS()(r)))
 }
 
 func SetupSwaggerDocs() {
@@ -44,5 +53,5 @@ func SetupSwaggerDocs() {
 
 func main() {
 	SetupDBConn()
-	SetupRouter(gin.Default()).Run()
+	RunMuxServer()
 }
