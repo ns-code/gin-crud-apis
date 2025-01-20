@@ -63,18 +63,13 @@ func AddUser(newUser User) (int64, error) {
 
 func DeleteUser(userId int64) (bool, error) {
 
-	isDeleted := false
-	tx := USERDB.MustBegin()
-	fmt.Println(">> bef del: ", userId)
-	_, err := tx.Exec("DELETE from user where user_id = $1", userId)
+	sqlResult := USERDB.MustExec("DELETE from user where user_id = $1", userId)
+	_, err := sqlResult.RowsAffected()
+	
 	if err == nil {
-		isDeleted = true
-		tx.Commit()
-	} else {
-		tx.Rollback()
+		return true, nil
 	}
-	fmt.Println(">> isDel: ", isDeleted)
-	return isDeleted, err
+	return false, err
 }
 
 func UpdateUser(updUser User, userId int64) (bool, error) {
