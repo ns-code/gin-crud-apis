@@ -149,7 +149,7 @@ func DeleteUser(c *gin.Context) {
 	}
 
 	if len(newItems) == len(usersDB)-1 {
-		c.JSON(http.StatusOK, gin.H{"message": "Delete User Success"})
+		c.JSON(http.StatusNoContent, gin.H{"message": "Delete User Success"})
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}

@@ -145,7 +145,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	success, _ := models.DeleteUser(userId)
 
 	if success {
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusNoContent)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
