@@ -5,12 +5,16 @@ import (
 	"log"
 	"net/http"
 
-	gorillahandlers "github.com/gorilla/handlers"
+	"github.com/rs/cors"
 	"github.com/gorilla/mux"
 	"github.com/ns-code/gin-crud-apis/docs"
 	"github.com/ns-code/gin-crud-apis/handlers"
 	"github.com/ns-code/gin-crud-apis/models"
 	"github.com/ns-code/gin-crud-apis/util"
+
+	// swaggerFiles "github.com/swaggo/files"
+	// ginSwagger "github.com/swaggo/gin-swagger"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 func SetupDBConn() {
@@ -21,25 +25,25 @@ func SetupDBConn() {
 
 func RunMuxServer() {
 
-	r := mux.NewRouter()
-	
+	muxRouter := mux.NewRouter()
 	SetupSwaggerDocs()
-
-	r.HandleFunc("/api/users", handlers.GetUsers).Methods("GET")
-	// r.HandleFunc("/api/users", handlers.AddUser).Methods("POST")
-	// r.HandleFunc("/api/users/:user_id", handlers.UpdateUser).Methods("PUT")
-	// r.HandleFunc("/api/users/:user_id", handlers.DeleteUser).Methods("DELETE")
-
-/*     corsOptions := gorillahandlers.CORSOptions{
-        AllowedOrigins: []string{"http://localhost:4200"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Allowed HTTP methods
-        AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Allowed request headers
-    }
-	
-	handler := gorillahandlers.CORS(corsOptions)(r) */
+	muxRouter.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
+	// muxRouter := muxr.PathPrefix("/api").Subrouter()	
+	muxRouter.HandleFunc("/api/users", handlers.GetUsers).Methods(http.MethodGet)
+	muxRouter.HandleFunc("/api/users", handlers.AddUser).Methods(http.MethodPost)
+	muxRouter.HandleFunc("/api/users/{userId}", handlers.UpdateUser).Methods(http.MethodPut)
+	muxRouter.HandleFunc("/api/users/{userId}", handlers.DeleteUser).Methods(http.MethodDelete)
 
 	fmt.Println(">> Mux Server is starting at port 8080")
-	log.Fatal(http.ListenAndServe(":8080", gorillahandlers.CORS()(r)))
+
+	c := cors.New(cors.Options{
+        AllowedOrigins: []string{"http://localhost:4200"},
+		AllowedMethods: []string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowCredentials: true,
+    })
+
+    handler := c.Handler(muxRouter)
+    log.Fatal(http.ListenAndServe(":8080", handler))
 }
 
 func SetupSwaggerDocs() {

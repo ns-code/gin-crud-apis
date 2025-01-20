@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/ns-code/gin-crud-apis/models"
 	"github.com/ns-code/gin-crud-apis/util"
@@ -16,23 +19,22 @@ import (
 // @Router /api/users [get]
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 
-		users, err := models.GetUsers(10)
-		util.CheckErr(err, "GetUsers users error")
+	users, err := models.GetUsers(10)
+	util.CheckErr(err, "GetUsers users error")
 
-		usersBytes, err := json.Marshal(users)
-		util.CheckErr(err, "GetUsers usersBytes error")
+	usersBytes, err := json.Marshal(users)
+	util.CheckErr(err, "GetUsers usersBytes error")
 
-		if users == nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("No Records Found"))
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write(usersBytes)
-		}	
+	if users == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("No Records Found"))
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(usersBytes)
+	}
 }
 
-/* 
 // @Description Add a new user
 // @Tags        users
 // @Accept       json
@@ -42,28 +44,32 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 // @Failure 409  "User Name exists"
 // @Failure 400  "Bad Request"
 // @Router /api/users [post]
-func AddUser(c *gin.Context) {
+func AddUser(w http.ResponseWriter, r *http.Request) {
 
-	if !ServerError(c) {
-		var user models.User
+	var user models.User
 
-		log.Println(c.Request.Body)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&user)
 
-		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Cannot map json to User"))
+	} else {
+		fmt.Println(">> new user: ", user.UserName, user.FirstName, user.LastName)
 		lastInsertedId, err := models.AddUser(user)
 
 		if lastInsertedId > 0 {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
 			user.UserId = lastInsertedId
-			c.JSON(http.StatusCreated, user)
+			usersBytes, err := json.Marshal(user)
+			util.CheckErr(err, "GetUsers usersBytes error")
+			w.Write(usersBytes)
 		} else {
 			if strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
-				c.JSON(http.StatusConflict, gin.H{"error": err})
+				w.WriteHeader(http.StatusConflict)
 			} else {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err})
+				w.WriteHeader(http.StatusBadRequest)
 			}
 		}
 	}
@@ -78,33 +84,38 @@ func AddUser(c *gin.Context) {
 // @Failure   409  "User Name exists"
 // @Failure   400  "Bad Request"
 // @Router /api/users/{userId} [put]
-func UpdateUser(c *gin.Context) {
-	if !ServerError(c) {
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
-		var json models.User
+	var user models.User
 
-		if err := c.ShouldBindJSON(&json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+	toks := strings.Split(r.URL.Path, "/")
+	userIdStr := toks[len(toks)-1]
 
-		userId, err := strconv.Atoi(c.Param("user_id"))
+	fmt.Println(">> queryValues: ", r.URL.Path, userIdStr)
+	// Access individual query parameters
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		fmt.Println(">> parse err: ", err.Error())
+		http.Error(w, "Error parsing query parameters", http.StatusBadRequest)
+		return
+	}
 
-		fmt.Printf("Updating id %d", userId)
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&user)
 
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UserID"})
-		}
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Cannot map json to User"))
+	} else {
+		isPdateSuccess, err := models.UpdateUser(user, userId)
 
-		success, err := models.UpdateUser(json, userId)
-
-		if success {
-			c.JSON(http.StatusOK, gin.H{"message": "Update User Success"})
+		if isPdateSuccess {
+			w.WriteHeader(http.StatusNoContent)
 		} else {
 			if strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
-				c.JSON(http.StatusConflict, gin.H{"error": err})
+				w.WriteHeader(http.StatusConflict)
 			} else {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err})
+				w.WriteHeader(http.StatusBadRequest)
 			}
 		}
 	}
@@ -117,50 +128,27 @@ func UpdateUser(c *gin.Context) {
 // @Failure   409  "User Name exists"
 // @Failure   400  "Bad Request"
 // @Router /api/users/{userId} [delete]
-func DeleteUser(c *gin.Context) {
-	if !ServerError(c) {
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
-		userId, err := strconv.Atoi(c.Param("user_id"))
+	// userIdStr := r.PathValue("userId")
+	toks := strings.Split(r.URL.Path, "/")
+	userIdStr := toks[len(toks)-1]
 
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UserID"})
-		}
-
-		success, err := models.DeleteUser(userId)
-
-		if success {
-			c.JSON(http.StatusOK, gin.H{"message": "Delete User Success"})
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err})
-		}
-	}
-}
-
-func ServerError(c *gin.Context) bool {
-	if models.USERDBERR {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error."})
-		return true
-	}
-	return false
-}
-
- *//* func getPersonById(c *gin.Context) {
-
-	// grab the Id of the record want to retrieve
-	id := c.Param("id")
-
-	person, err := models.GetPersonById(id)
-
-	checkErr(err)
-	// if the name is blank we can assume nothing is found
-	if person.FirstName == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No Records Found"})
+	fmt.Println(">> queryValues: ", r.URL.Path, userIdStr)
+	// Access individual query parameters
+	userId, err := strconv.ParseInt(userIdStr, 10, 32)
+	if err != nil {
+		fmt.Println(">> parse err: ", err.Error())
+		http.Error(w, "Error parsing query parameters", http.StatusBadRequest)
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{"data": person})
 	}
+	success, _ := models.DeleteUser(userId)
+
+	if success {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 }
-
-*/
-
 

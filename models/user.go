@@ -1,6 +1,9 @@
 package models
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/ns-code/gin-crud-apis/util"
@@ -47,121 +50,54 @@ func GetUsers(count int) ([]User, error) {
 	return users, err
 }
 
-
-/* 
 func AddUser(newUser User) (int64, error) {
 
-	tx, err := USERDB.Begin()
+	query := `INSERT INTO user (user_name, first_name, last_name, email, user_status, department) VALUES (:USER_NAME, :FIRST_NAME, :LAST_NAME, :EMAIL, :USER_STATUS, :DEPARTMENT)`
+    sqlResult, err := USERDB.NamedExec(query, newUser)
 	if err != nil {
-		tx.Rollback()
+		fmt.Println(">> sqlResult, err: ", sqlResult, err)
 		return 0, err
 	}
-
-	stmt, err := tx.Prepare("INSERT INTO user (user_name, first_name, last_name, email, user_status, department) VALUES (?, ?, ?, ?, ?, ?)")
-
-	if err != nil {
-		tx.Rollback()
-		return 0, err
-	}
-
-	defer stmt.Close()
-
-	res, errres := stmt.Exec(newUser.UserName, newUser.FirstName, newUser.LastName, newUser.Email, newUser.UserStatus, newUser.Department)
-
-	if errres != nil {
-		tx.Rollback()
-		return 0, err
-	}
-
-	tx.Commit()
-
-	lastInsertedId, _ := res.LastInsertId()
-
-	return lastInsertedId, nil
+	return sqlResult.LastInsertId()
 }
 
-func UpdateUser(ourUser User, userId int) (bool, error) {
+func DeleteUser(userId int64) (bool, error) {
 
-	tx, err := USERDB.Begin()
-	if err != nil {
+	isDeleted := false
+	tx := USERDB.MustBegin()
+	fmt.Println(">> bef del: ", userId)
+	_, err := tx.Exec("DELETE from user where user_id = $1", userId)
+	if err == nil {
+		isDeleted = true
+		tx.Commit()
+	} else {
 		tx.Rollback()
+	}
+	fmt.Println(">> isDel: ", isDeleted)
+	return isDeleted, err
+}
+
+func UpdateUser(updUser User, userId int64) (bool, error) {
+
+ 	tx := USERDB.MustBegin()
+	sqlResult := tx.MustExec("UPDATE user SET user_name = $1, first_name = $2, last_name = $3, email = $4, user_status = $5, department = $6 WHERE user_id = $7", updUser.UserName, updUser.FirstName, updUser.LastName, updUser.Email, updUser.UserStatus, updUser.Department, userId)
+	
+	if sqlResult != nil {
+		tx.Commit()
+		return true, nil
+	} else {
+		tx.Rollback()
+	}
+	return false, errors.New("Update user db error")
+ 
+/* 	query := `UPDATE user SET user_name = :USER_NAME, first_name = :FIRST_NAME, last_name = :LAST_NAME, email = :EMAIL, user_status = :USER_STATUS, department = :DEPARTMENT WHERE user_id = :USER_ID`
+    sqlResult, err := USERDB.NamedExec(query, updUser)
+	if err != nil {
+		fmt.Println(">> sqlResult, err: ", sqlResult, err)
 		return false, err
 	}
-
-	stmt, err := tx.Prepare("UPDATE user SET user_name = ?, first_name = ?, last_name = ?, email = ?, user_status = ?, department = ? WHERE user_id = ?")
-
-	if err != nil {
-		tx.Rollback()
-		return false, err
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(ourUser.UserName, ourUser.FirstName, ourUser.LastName, ourUser.Email, ourUser.UserStatus, ourUser.Department, userId)
-
-	if err != nil {
-		tx.Rollback()
-		return false, err
-	}
-
-	tx.Commit()
 	return true, nil
-}
-
-func DeleteUser(userId int) (bool, error) {
-
-	tx, err := USERDB.Begin()
-
-	if err != nil {
-		tx.Rollback()
-		return false, err
-	}
-
-	stmt, err := USERDB.Prepare("DELETE from user where user_id = ?")
-
-	if err != nil {
-		tx.Rollback()
-		return false, err
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(userId)
-
-	if err != nil {
-		tx.Rollback()
-		return false, err
-	}
-
-	tx.Commit()
-
-	return true, nil
-}
-
- *//*
-func GetUserById(id string) (User, error) {
-
-	stmt, err := DB.Prepare("SELECT id, first_name, last_name, email, ip_address from people WHERE id = ?")
-
-	if err != nil {
-		return User{}, err
-	}
-
-	person := User{}
-
-	sqlErr := stmt.QueryRow(id).Scan(&person.Id, &person.FirstName, &person.LastName, &person.Email, &person.IpAddress)
-
-	if sqlErr != nil {
-		if sqlErr == sql.ErrNoRows {
-			return User{}, nil
-		}
-		return User{}, sqlErr
-	}
-	return person, nil
+ */
 }
 
 
-
-
-
-*/

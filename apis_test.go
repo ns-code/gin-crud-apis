@@ -3,13 +3,18 @@ package main
 import (
 	// "bytes"
 	// "encoding/json"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+
 	// "strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ns-code/gin-crud-apis/handlers/mock"
+	"github.com/ns-code/gin-crud-apis/models"
+
 	// "github.com/ns-code/gin-crud-apis/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +41,7 @@ func TestGetUsers(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 }
-/* 
+
 func TestAddUserWithUserNameExistsError(t *testing.T) {
 	router := gin.Default()
 
@@ -146,4 +151,3 @@ func TestDeleteUserWithSuccess(t *testing.T) {
 	// Assert on response
 	assert.Equal(t, http.StatusOK, w.Code)
 }
- */
