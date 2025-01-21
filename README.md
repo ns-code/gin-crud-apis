@@ -14,7 +14,7 @@ DELETE /api/users/{userId}
 
 
 ### Releases Info
-The Release-1.0.0 uses gin and std database/sql packages. The Release-2.0.0 uses gorilla/mux and sqlx packages
+The Release-1.0.0 uses gin and std database/sql packages. The Release-2.1.0 uses gorilla/mux and sqlx packages
 
 
 ### Install
@@ -26,12 +26,15 @@ go env -w CGO_ENABLED=1
 
 ### Unit Testing
 The apis can be unit tested by running:<br>
-go test .
+go test -v ./apis_test.go
 
 
 ### Integration Testing
 Start the web application using:<br>
 go run .
 
-All the APIs mentioned above can then be integration tested using the Swagger UI:<br>
+With the app running in one command pad, run the following in another command pad:<br>
+go test -v ./integrationtests/apis_integration_test.go
+
+All the APIs mentioned above can also be integration tested manually using the Swagger UI:<br>
 http://localhost:8080/docs/index.html

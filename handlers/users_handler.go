@@ -107,9 +107,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Cannot map json to User"))
 	} else {
-		isPdateSuccess, err := models.UpdateUser(user, userId)
+		isUpdateSuccess, err := models.UpdateUser(user, userId)
 
-		if isPdateSuccess {
+		if isUpdateSuccess {
 			w.WriteHeader(http.StatusNoContent)
 		} else {
 			if strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
